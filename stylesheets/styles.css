@@ -849,3 +849,7 @@ section #title .credits.right {
     display: none;
   }
 }
+
+#jnk-avatar {
+  text-align: center;
+}
