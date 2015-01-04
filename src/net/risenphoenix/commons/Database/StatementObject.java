@@ -1,6 +1,5 @@
 /*
- * Copyright 2014 Jacob Keep (Jnk1296).
- * All rights reserved.
+ * Copyright © 2014 Jacob Keep (Jnk1296). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.risenphoenix.commons.Database;
+package net.risenphoenix.commons.database;
 
 import net.risenphoenix.commons.Plugin;
 
@@ -59,14 +58,15 @@ public class StatementObject {
             PreparedStatement prepStmt = c.prepareStatement(this.SQL);
 
             if (this.values != null) {
-                for (int i = 1; i < this.values.length; i++) {
-                    if (this.values[i] instanceof String) {
-                        prepStmt.setString(i, this.values[i].toString());
+                for (int i = 1; i <= this.values.length; i++) {
+
+                    if (this.values[i-1] instanceof Integer) {
+                        prepStmt.setInt(i, (Integer) this.values[i-1]);
                         continue;
                     }
 
-                    if (this.values[i] instanceof Integer) {
-                        prepStmt.setInt(i, (Integer) this.values[i]);
+                    if (this.values[i-1] instanceof String) {
+                        prepStmt.setString(i, this.values[i-1].toString());
                         continue;
                     }
 
@@ -86,5 +86,4 @@ public class StatementObject {
 
         return null;
     }
-
 }

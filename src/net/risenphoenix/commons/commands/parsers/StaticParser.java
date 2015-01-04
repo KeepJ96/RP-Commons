@@ -1,6 +1,5 @@
 /*
- * Copyright 2014 Jacob Keep (Jnk1296).
- * All rights reserved.
+ * Copyright © 2014 Jacob Keep (Jnk1296). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,16 +31,13 @@
 package net.risenphoenix.commons.commands.parsers;
 
 import net.risenphoenix.commons.commands.Command;
+import net.risenphoenix.commons.commands.CommandManager;
 import net.risenphoenix.commons.commands.ComparisonResult;
 
-public class StaticParser implements Parser {
+public class StaticParser extends Parser {
 
-    private Command cmd;
-    private String[] input;
-
-    public StaticParser(Command cmd, String[] args) {
-        this.cmd = cmd;
-        this.input = args;
+    public StaticParser(CommandManager mngr, Command cmd, String[] args) {
+        super(mngr, cmd, args);
     }
 
     @Override
@@ -80,8 +76,10 @@ public class StaticParser implements Parser {
         // Check for Matching Arguments
         for (int i = 0; i < COMMAND_ARGS.length; i++) {
             // Debug Output
-            System.out.println("Command Expected: " + COMMAND_ARGS[i]);
-            System.out.println("Received: " + INPUT_ARGS[i]);
+            if (this.cmdManager.debugMode()) {
+                System.out.println("Command Expected: " + COMMAND_ARGS[i]);
+                System.out.println("Received: " + INPUT_ARGS[i]);
+            }
 
             if (COMMAND_ARGS[i].equals("null")) {
                 return ComparisonResult.ARG_ERR;

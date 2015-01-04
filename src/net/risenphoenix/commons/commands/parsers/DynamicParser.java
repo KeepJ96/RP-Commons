@@ -1,6 +1,5 @@
 /*
- * Copyright 2014 Jacob Keep (Jnk1296).
- * All rights reserved.
+ * Copyright © 2014 Jacob Keep (Jnk1296). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,16 +31,13 @@
 package net.risenphoenix.commons.commands.parsers;
 
 import net.risenphoenix.commons.commands.Command;
+import net.risenphoenix.commons.commands.CommandManager;
 import net.risenphoenix.commons.commands.ComparisonResult;
 
-public class DynamicParser implements Parser {
+public class DynamicParser extends Parser {
 
-    private Command cmd;
-    private String[] input;
-
-    public DynamicParser(Command cmd, String[] args) {
-        this.cmd = cmd;
-        this.input = args;
+    public DynamicParser(CommandManager mngr, Command cmd, String[] args) {
+        super(mngr, cmd, args);
     }
 
     @Override
@@ -64,8 +60,10 @@ public class DynamicParser implements Parser {
         // Check for Matching Arguments
         for (int i = 0; i < COMMAND_ARGS.length; i++) {
             // Debug Output
-            System.out.println("Command Expected: " + COMMAND_ARGS[i]);
-            System.out.println("Received: " + INPUT_ARGS[i]);
+            if (this.cmdManager.debugMode()) {
+                System.out.println("Command Expected: " + COMMAND_ARGS[i]);
+                System.out.println("Received: " + INPUT_ARGS[i]);
+            }
 
             if (COMMAND_ARGS[i].equals("VAR_ARG_OPT")) continue;
 

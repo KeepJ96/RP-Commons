@@ -1,6 +1,5 @@
 /*
- * Copyright 2014 Jacob Keep (Jnk1296).
- * All rights reserved.
+ * Copyright © 2014 Jacob Keep (Jnk1296). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,20 +28,25 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.risenphoenix.commons.Database;
+package net.risenphoenix.commons.database;
 
 import net.risenphoenix.commons.Plugin;
 
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.sql.*;
 import java.util.logging.Level;
+import com.mchange.v2.c3p0.*;
 
 public class DatabaseConnection {
 
     private final Plugin plugin;
     public Connection c = null;
+
     private String driver;
     private String connectionString;
+
+    private ComboPooledDataSource pooledDataSource = null;
 
     // SQLite Connection Initializer
     public DatabaseConnection(final Plugin plugin) {
@@ -52,6 +56,16 @@ public class DatabaseConnection {
         connectionString = "jdbc:sqlite:" +
                 new File(this.plugin.getDataFolder() + File.separator +
                         "store.db").getAbsolutePath();
+        this.openConnection();
+    }
+
+    public DatabaseConnection(final Plugin plugin, final String dbName) {
+        this.plugin = plugin;
+
+        driver = "org.sqlite.JDBC";
+        connectionString = "jdbc:sqlite:" +
+                new File(this.plugin.getDataFolder() + File.separator +
+                        dbName + ".db").getAbsolutePath();
         this.openConnection();
     }
 
@@ -65,6 +79,32 @@ public class DatabaseConnection {
                 database + "?user=" + username + "&password=" + pwd;
         this.openConnection();
     }
+
+    // MySQL (Pooled) Connection Initializer
+    public DatabaseConnection(final Plugin plugin, String hostname, int port,
+                              String database, String username, String pwd, int
+                              poolSize) {
+        this.plugin = plugin;
+
+        driver = "com.mysql.jdbc.Driver";
+        connectionString = "jdbc:mysql://" + hostname + ":" + port + "/" +
+                database;
+
+        pooledDataSource = new ComboPooledDataSource();
+
+        try {
+            pooledDataSource.setDriverClass(driver);
+        } catch (PropertyVetoException e) {
+            e.printStackTrace();
+        }
+
+        pooledDataSource.setJdbcUrl(connectionString);
+        pooledDataSource.setUser(username);
+        pooledDataSource.setPassword(pwd);
+        pooledDataSource.setMaxPoolSize(poolSize);
+    }
+
+
 
     public Connection openConnection() {
         try {
@@ -108,6 +148,16 @@ public class DatabaseConnection {
     }
 
     public Connection getConnection() {
+        if (pooledDataSource != null) {
+            try {
+                return pooledDataSource.getConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
         return this.c;
     }
 

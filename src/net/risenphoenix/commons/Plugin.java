@@ -1,6 +1,5 @@
 /*
- * Copyright 2014 Jacob Keep (Jnk1296).
- * All rights reserved.
+ * Copyright © 2014 Jacob Keep (Jnk1296). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,30 +30,25 @@
 
 package net.risenphoenix.commons;
 
-import net.risenphoenix.commons.Configuration.ConfigurationManager;
-import net.risenphoenix.commons.Database.DatabaseManager;
-import net.risenphoenix.commons.Localization.LocalizationManager;
-import net.risenphoenix.commons.commands.CommandManager;
-import net.risenphoenix.commons.commands.ParseResult;
-import net.risenphoenix.commons.commands.ResultType;
+import net.risenphoenix.commons.commands.*;
+import net.risenphoenix.commons.configuration.ConfigurationManager;
+import net.risenphoenix.commons.localization.LocalizationManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.lang.reflect.Constructor;
+import java.util.*;
 import java.util.logging.Level;
 
 public class Plugin extends JavaPlugin {
 
-    public LocalizationManager LM;
-    public CommandManager CM;
-    public ConfigurationManager ConfigM;
-    public DatabaseManager DB = null;
-    public boolean usingDatabase = false;
+    private LocalizationManager LM;
+    private CommandManager CM;
+    private ConfigurationManager ConfigM;
+
     private String pluginName;
     private ChatColor pluginColor = ChatColor.GOLD;
     private ChatColor messageColor = ChatColor.WHITE;
@@ -63,13 +57,13 @@ public class Plugin extends JavaPlugin {
 
     @Override
     public final void onEnable() {
-        this.ConfigM = new ConfigurationManager(this);
         this.pluginName = "[" + this.getDescription().getName() + "] ";
 
-        // Must make direct call to Plugin Configuration as Config-Manager is
+        // Must make direct call to Plugin configuration as Config-Manager is
         // not initialized at this point in the execution.
         this.LM = new LocalizationManager(this, this.getConfig()
                 .getString("language"));
+        this.ConfigM = new ConfigurationManager(this);
         this.CM = new CommandManager(this);
         this.onStartup();
     }
@@ -89,11 +83,6 @@ public class Plugin extends JavaPlugin {
         List<String> argsPre = new LinkedList<String>(Arrays.asList(args));
         argsPre.add(0, root.getName());
 
-        // DEBUG
-        for (int i = 0; i < argsPre.size(); i++) {
-            System.out.println(argsPre.get(i));
-        }
-
         // Convert back to Array
         String[] argsFinal = new String[argsPre.size()];
         argsFinal = argsPre.toArray(argsFinal);
@@ -104,22 +93,56 @@ public class Plugin extends JavaPlugin {
 
         // If the Parser returned a Command
         if (pResult.getResult() == ResultType.SUCCESS) {
+            /*
+             * A new command instance must be created when a command is called,
+             * so as to prevent static commands from being served to players.
+             * This prevents any form of data swappage between two different
+             * players executing the same command at the same time.
+             */
+
+            // New Command Instance.
+            Command cmd = null;
+
+            // The dirty dynamic hack :D
+            try {
+                // Fetch Class Type
+                Class<?> clazz = Class.forName(
+                        pResult.getCommand().getClass().getName());
+
+                // Create the Constructor for the Command class. This works
+                // only because all commands extend Command, which requires
+                // these three arguments to be constructed.
+                Constructor<?> ctor = clazz.getConstructor(
+                        Plugin.class, String[].class, CommandType.class);
+
+                // Create the specified Command Instance
+                cmd = (Command) ctor.newInstance(this,
+                        pResult.getCommand().getCallArgs(),
+                        pResult.getCommand().getType());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             // If Player is calling this command, check Permissions and execute
-            if (sender instanceof Player) {
-                if (!pResult.getCommand().onCall(sender, args)) {
-                    this.sendPlayerMessage(sender,
-                            this.LM.getLocalString("PERM_ERR"));
-                }
+            if (cmd != null) {
+                if (sender instanceof Player) {
+                    if (!cmd.onCall(sender, args)) {
+                        this.sendPlayerMessage(sender,
+                                this.LM.getLocalString("PERM_ERR"));
+                    }
 
-                // If Console is calling Command, check if Command is executable
-            } else {
-                if (!pResult.getCommand().canConsoleExecute()) {
-                    this.sendConsoleMessage(Level.INFO,
-                            this.LM.getLocalString("NO_CONSOLE"));
+                    // If Console is calling Command, check if Command is executable
                 } else {
-                    pResult.getCommand().onCall(sender, args);
+                    if (!cmd.canConsoleExecute()) {
+                        this.sendConsoleMessage(Level.INFO,
+                                this.LM.getLocalString("NO_CONSOLE"));
+                    } else {
+                        cmd.onCall(sender, args);
+                    }
                 }
+            } else {
+                sendPlayerMessage(sender, getLocalizationManager()
+                                .getLocalString("CMD_NULL_ERR"));
             }
 
             // If the Parser returned a Command, but the Argument count was bad
@@ -147,28 +170,29 @@ public class Plugin extends JavaPlugin {
                 this.LM.getLocalString("NO_IMPLEMENT"));
     }
 
+    public final Map<String, String> getVersionInfo() {
+        Map<String, String> info = new HashMap<String, String>();
+
+        info.put("NAME", "RP-Commons");
+        info.put("VERSION", "v1.05");
+        info.put("AUTHOR", "Jacob Keep");
+        info.put("BUILD", "93");
+        info.put("JVM_COMPAT", "1.7");
+
+        return info;
+    }
+
     public final LocalizationManager getLocalizationManager() {
         return this.LM;
     }
 
-    public final DatabaseManager getDatabaseManager() {
-        if (this.usingDatabase) {
-            if (this.DB != null) {
-                return this.DB;
-            } else {
-                sendConsoleMessage(Level.SEVERE,
-                        this.LM.getLocalString("DB_INIT_ERR"));
-                return null;
-            }
-        } else {
-            sendConsoleMessage(Level.SEVERE,
-                    this.LM.getLocalString("DB_OFF_ERR"));
-            return null;
-        }
+    // Can be over-ridden in order to avoid Bukkit contaminating YML files
+    public ConfigurationManager getConfigurationManager() {
+        return this.ConfigM;
     }
 
-    public final void setDatabaseManager(DatabaseManager dbMan) {
-        this.DB = dbMan;
+    public final CommandManager getCommandManager() {
+        return this.CM;
     }
 
     public final void setPluginName(ChatColor color, String name) {
@@ -178,10 +202,6 @@ public class Plugin extends JavaPlugin {
 
     public final void setMessageColor(ChatColor color) {
         this.messageColor = color;
-    }
-
-    public final void isUsingDatabase(boolean flag) {
-        this.usingDatabase = flag;
     }
 
     public final void sendPlayerMessage(CommandSender sender, String message) {

@@ -1,6 +1,5 @@
 /*
- * Copyright 2014 Jacob Keep (Jnk1296).
- * All rights reserved.
+ * Copyright © 2014 Jacob Keep (Jnk1296). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -36,6 +35,7 @@ import net.risenphoenix.commons.commands.parsers.DynamicParser;
 import net.risenphoenix.commons.commands.parsers.Parser;
 import net.risenphoenix.commons.commands.parsers.StaticParser;
 import net.risenphoenix.commons.commands.parsers.VariableParser;
+import net.risenphoenix.commons.stores.CommandStore;
 
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -45,8 +45,14 @@ public class CommandManager {
     private final Plugin plugin;
     private ArrayList<Command> commands = new ArrayList<Command>();
 
+    private boolean debugMode = false;
+
     public CommandManager(final Plugin plugin) {
         this.plugin = plugin;
+    }
+
+    public final void registerStore(CommandStore cmdStore) {
+        this.commands = cmdStore.getCommands();
     }
 
     public final boolean registerCommand(Command cmd) {
@@ -75,18 +81,17 @@ public class CommandManager {
     }
 
     public final ParseResult parseCommand(String[] args) {
-        System.out.println("PARSING ARGUMENTS");
         for (Command cmd : this.commands) {
             Parser parser;
 
             if (cmd.getType() == CommandType.STATIC) {
-                parser = new StaticParser(cmd, args);
+                parser = new StaticParser(this, cmd, args);
             } else if (cmd.getType() == CommandType.VARIABLE) {
-                parser = new VariableParser(cmd, args);
+                parser = new VariableParser(this, cmd, args);
             } else if (cmd.getType() == CommandType.DYNAMIC) {
-                parser = new DynamicParser(cmd, args);
+                parser = new DynamicParser(this, cmd, args);
             } else {
-                parser = new StaticParser(cmd, args);
+                parser = new StaticParser(this, cmd, args);
             }
 
             ComparisonResult result = parser.parseCommand();
@@ -95,11 +100,21 @@ public class CommandManager {
                 return new ParseResult(ResultType.SUCCESS, cmd);
             } else if (result.equals(ComparisonResult.ARG_ERR)) {
                 return new ParseResult(ResultType.BAD_NUM_ARGS, cmd);
-            } else {
-                continue;
             }
         }
 
         return new ParseResult(ResultType.FAIL, null);
+    }
+
+    public Plugin getPlugin() {
+        return this.plugin;
+    }
+
+    public void setDebugMode(boolean flag) {
+        this.debugMode = flag;
+    }
+
+    public boolean debugMode() {
+        return this.debugMode;
     }
 }

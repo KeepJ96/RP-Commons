@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="rp_commons" default="all">
+  
+  
+  <property file="rp_commons.properties"/>
+  <!-- Uncomment the following property if no tests compilation is needed -->
+  <!-- 
+  <property name="skip.tests" value="true"/>
+   -->
+  
+  <!-- Compiler options -->
+  
+  <property name="compiler.debug" value="on"/>
+  <property name="compiler.generate.no.warnings" value="off"/>
+  <property name="compiler.args" value=""/>
+  <property name="compiler.max.memory" value="128m"/>
+  <patternset id="ignored.files">
+    <exclude name="**/CVS/**"/>
+    <exclude name="**/SCCS/**"/>
+    <exclude name="**/RCS/**"/>
+    <exclude name="**/rcs/**"/>
+    <exclude name="**/.DS_Store/**"/>
+    <exclude name="**/.svn/**"/>
+    <exclude name="**/.pyc/**"/>
+    <exclude name="**/.pyo/**"/>
+    <exclude name="**/*.pyc/**"/>
+    <exclude name="**/*.pyo/**"/>
+    <exclude name="**/.git/**"/>
+    <exclude name="**/*.hprof/**"/>
+    <exclude name="**/_svn/**"/>
+    <exclude name="**/.hg/**"/>
+    <exclude name="**/*.lib/**"/>
+    <exclude name="**/*~/**"/>
+    <exclude name="**/__pycache__/**"/>
+    <exclude name="**/.bundle/**"/>
+    <exclude name="**/*.rbc/**"/>
+  </patternset>
+  <patternset id="library.patterns">
+    <include name="*.zip"/>
+    <include name="*.apk"/>
+    <include name="*.war"/>
+    <include name="*.egg"/>
+    <include name="*.ear"/>
+    <include name="*.ane"/>
+    <include name="*.swc"/>
+    <include name="*.jar"/>
+  </patternset>
+  <patternset id="compiler.resources">
+    <exclude name="**/?*.java"/>
+    <exclude name="**/?*.form"/>
+    <exclude name="**/?*.class"/>
+    <exclude name="**/?*.groovy"/>
+    <exclude name="**/?*.scala"/>
+    <exclude name="**/?*.flex"/>
+    <exclude name="**/?*.kt"/>
+    <exclude name="**/?*.clj"/>
+  </patternset>
+  
+  <!-- JDK definitions -->
+  
+  <property name="jdk.bin.1.7" value="${jdk.home.1.7}/bin"/>
+  <path id="jdk.classpath.1.7">
+    <fileset dir="${jdk.home.1.7}">
+      <include name="jre/lib/jfxrt.jar"/>
+      <include name="jre/lib/resources.jar"/>
+      <include name="jre/lib/charsets.jar"/>
+      <include name="jre/lib/management-agent.jar"/>
+      <include name="jre/lib/plugin.jar"/>
+      <include name="jre/lib/jsse.jar"/>
+      <include name="jre/lib/deploy.jar"/>
+      <include name="jre/lib/jfr.jar"/>
+      <include name="jre/lib/javaws.jar"/>
+      <include name="jre/lib/rt.jar"/>
+      <include name="jre/lib/jce.jar"/>
+      <include name="jre/lib/ext/localedata.jar"/>
+      <include name="jre/lib/ext/sunjce_provider.jar"/>
+      <include name="jre/lib/ext/sunec.jar"/>
+      <include name="jre/lib/ext/zipfs.jar"/>
+      <include name="jre/lib/ext/sunpkcs11.jar"/>
+      <include name="jre/lib/ext/dnsns.jar"/>
+    </fileset>
+  </path>
+  
+  <property name="project.jdk.home" value="${jdk.home.1.7}"/>
+  <property name="project.jdk.bin" value="${jdk.bin.1.7}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath.1.7"/>
+  
+  
+  <!-- Project Libraries -->
+  
+  <path id="library.bukkit-1.7.2-r0.2.classpath">
+    <pathelement location="${basedir}/../../Java Files/bukkit-1.7.2-R0.2.jar"/>
+  </path>
+  <!-- Register Custom Compiler Taskdefs -->
+  <property name="javac2.home" value="${idea.home}/lib"/>
+  <path id="javac2.classpath">
+    <pathelement location="${javac2.home}/javac2.jar"/>
+    <pathelement location="${javac2.home}/jdom.jar"/>
+    <pathelement location="${javac2.home}/asm4-all.jar"/>
+    <pathelement location="${javac2.home}/jgoodies-forms.jar"/>
+  </path>
+  <target name="register.custom.compilers">
+    <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="javac2.classpath"/>
+    <taskdef name="instrumentIdeaExtensions" classname="com.intellij.ant.InstrumentIdeaExtensions" classpathref="javac2.classpath"/>
+  </target>
+  
+  <!-- Modules -->
+  
+  
+  <!-- Module RP Commons -->
+  
+  <dirname property="module.rp_commons.basedir" file="${ant.file}"/>
+  
+  
+  <property name="module.jdk.home.rp_commons" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.rp_commons" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.rp_commons" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.rp_commons" value="-encoding UTF-8 -source 1.6 ${compiler.args}"/>
+  
+  <property name="rp_commons.output.dir" value="${module.rp_commons.basedir}/out/production/RP Commons"/>
+  <property name="rp_commons.testoutput.dir" value="${module.rp_commons.basedir}/out/test/RP Commons"/>
+  
+  <path id="rp_commons.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="rp_commons.module.production.classpath">
+    <path refid="${module.jdk.classpath.rp_commons}"/>
+    <path refid="library.bukkit-1.7.2-r0.2.classpath"/>
+  </path>
+  
+  <path id="rp_commons.runtime.production.module.classpath">
+    <pathelement location="${rp_commons.output.dir}"/>
+    <path refid="library.bukkit-1.7.2-r0.2.classpath"/>
+  </path>
+  
+  <path id="rp_commons.module.classpath">
+    <path refid="${module.jdk.classpath.rp_commons}"/>
+    <pathelement location="${rp_commons.output.dir}"/>
+    <path refid="library.bukkit-1.7.2-r0.2.classpath"/>
+  </path>
+  
+  <path id="rp_commons.runtime.module.classpath">
+    <pathelement location="${rp_commons.testoutput.dir}"/>
+    <pathelement location="${rp_commons.output.dir}"/>
+    <path refid="library.bukkit-1.7.2-r0.2.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.rp_commons">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.rp_commons">
+    <patternset refid="excluded.from.module.rp_commons"/>
+  </patternset>
+  
+  <path id="rp_commons.module.sourcepath">
+    <dirset dir="${module.rp_commons.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.rp_commons" depends="compile.module.rp_commons.production,compile.module.rp_commons.tests" description="Compile module RP Commons"/>
+  
+  <target name="compile.module.rp_commons.production" depends="register.custom.compilers" description="Compile module RP Commons; production classes">
+    <mkdir dir="${rp_commons.output.dir}"/>
+    <javac2 destdir="${rp_commons.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.rp_commons}/javac">
+      <compilerarg line="${compiler.args.rp_commons}"/>
+      <bootclasspath refid="rp_commons.module.bootclasspath"/>
+      <classpath refid="rp_commons.module.production.classpath"/>
+      <src refid="rp_commons.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.rp_commons"/>
+    </javac2>
+    
+    <copy todir="${rp_commons.output.dir}">
+      <fileset dir="${module.rp_commons.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.rp_commons.tests" depends="register.custom.compilers,compile.module.rp_commons.production" description="compile module RP Commons; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.rp_commons" description="cleanup module">
+    <delete dir="${rp_commons.output.dir}"/>
+    <delete dir="${rp_commons.testoutput.dir}"/>
+  </target>
+  
+  <target name="init" description="Build initialization">
+    <!-- Perform any build initialization in this target -->
+  </target>
+  
+  <target name="clean" depends="clean.module.rp_commons" description="cleanup all"/>
+  
+  <target name="build.modules" depends="init, clean, compile.module.rp_commons" description="build all modules"/>
+  
+  <target name="all" depends="build.modules" description="build all"/>
+</project>

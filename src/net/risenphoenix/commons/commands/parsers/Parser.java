@@ -1,6 +1,5 @@
 /*
- * Copyright 2014 Jacob Keep (Jnk1296).
- * All rights reserved.
+ * Copyright © 2014 Jacob Keep (Jnk1296). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,10 +30,25 @@
 
 package net.risenphoenix.commons.commands.parsers;
 
+import net.risenphoenix.commons.commands.Command;
+import net.risenphoenix.commons.commands.CommandManager;
 import net.risenphoenix.commons.commands.ComparisonResult;
 
-public interface Parser {
+public class Parser {
 
-    public ComparisonResult parseCommand();
+    public CommandManager cmdManager;
+    public Command cmd;
+    public String[] input;
+
+    public Parser(CommandManager mngr, Command cmd, String[] input) {
+        this.cmdManager =  mngr;
+        this.cmd = cmd;
+        this.input = input;
+    }
+
+    public ComparisonResult parseCommand(){
+        throw new UnsupportedOperationException(this.cmdManager.getPlugin()
+                .getLocalizationManager().getLocalString("BAD_PARSE_SET"));
+    }
 
 }

@@ -1,6 +1,5 @@
 /*
- * Copyright 2014 Jacob Keep (Jnk1296).
- * All rights reserved.
+ * Copyright © 2014 Jacob Keep (Jnk1296). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,12 +28,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.risenphoenix.commons.commands.parsers;
+package net.risenphoenix.commons.stores;
 
-import net.risenphoenix.commons.commands.ComparisonResult;
+import net.risenphoenix.commons.Plugin;
 
-public interface Parser {
+public class Store {
 
-    public ComparisonResult parseCommand();
+    public final Plugin plugin;
+
+    public Store(final Plugin plugin) {
+        this.plugin = plugin;
+    }
+
+    public void initializeStore() {
+        throw new UnsupportedOperationException(this.plugin
+                .getLocalizationManager().getLocalString("NO_IMPLEMENT"));
+    }
 
 }

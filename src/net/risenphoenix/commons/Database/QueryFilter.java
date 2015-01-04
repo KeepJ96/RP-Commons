@@ -1,6 +1,5 @@
 /*
- * Copyright 2014 Jacob Keep (Jnk1296).
- * All rights reserved.
+ * Copyright © 2014 Jacob Keep (Jnk1296). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,14 +28,25 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.risenphoenix.commons.Database;
+package net.risenphoenix.commons.database;
 
 import java.sql.ResultSet;
 
 public class QueryFilter {
 
+    private Object[] data = null;
+
+    public QueryFilter() { }
+
+    public QueryFilter(Object[] data) {
+        this.data = data;
+    }
+
     public Object onExecute(ResultSet resultSet) {
         return null;
     }
 
+    public Object[] getData() {
+        return this.data;
+    }
 }

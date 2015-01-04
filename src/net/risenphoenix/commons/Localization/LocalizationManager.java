@@ -1,6 +1,5 @@
 /*
- * Copyright 2014 Jacob Keep (Jnk1296).
- * All rights reserved.
+ * Copyright © 2014 Jacob Keep (Jnk1296). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,9 +28,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.risenphoenix.commons.Localization;
+package net.risenphoenix.commons.localization;
 
 import net.risenphoenix.commons.Plugin;
+import net.risenphoenix.commons.stores.LocalizationStore;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -65,12 +65,13 @@ public class LocalizationManager {
     }
 
     private final void loadTranslation(File path) {
-        if (this.selectedLanguage.equals("en")) {
-            loadDefaultTranslation();
-        } else {
+        if (!this.selectedLanguage.equals("en") || !selectedLanguage.isEmpty()) {
             loadedLanguage = YamlConfiguration.loadConfiguration(path);
             initializeTranslationIndex();
         }
+
+        // Initialize Default Translation both as primary and as fallback.
+        loadDefaultTranslation();
     }
 
     private final void initializeTranslationIndex() {
@@ -78,8 +79,7 @@ public class LocalizationManager {
 
         for (Map.Entry<String, Object> entry : loadedLanguage.getValues(true).
                 entrySet()) {
-            this.translation.put(entry.getKey(),
-                    entry.getValue().toString());
+            this.translation.put(entry.getKey(), entry.getValue().toString());
         }
     }
 
@@ -103,13 +103,28 @@ public class LocalizationManager {
                 "executed from Console.");
         this.defaultTranslation.put("NO_CMD", "An invalid command was " +
                 "specified.");
+        this.defaultTranslation.put("CMD_NULL_ERR", "An error occurred while " +
+                "generating a Command Instance. The command has been aborted.");
+        this.defaultTranslation.put("BAD_PARSE_SET", "The parse instructions " +
+                "for this Parser have not been determined. Please override " +
+                "method Parser.parseCommand() in your parsing class.");
 
-        // Configuration Manager Messages
+        // configuration Manager Messages
         this.defaultTranslation.put("BAD_CFG_SET", "Failed to register " +
                 "Configuration Option. Perhaps it is already specified? " +
                 "Cfg-ID: ");
         this.defaultTranslation.put("CFG_INIT_ERR", "The Configuration could " +
                 "not be refreshed because it has not yet been initialized.");
+        this.defaultTranslation.put("FILE_CFG_NULL", "Failed to save " +
+                "configuration; FileConfiguration was null.");
+        this.defaultTranslation.put("CFG_SRC_NULL", "Failed to save or reload" +
+                "configuration; Configuration Source File was null.");
+        this.defaultTranslation.put("CFG_SAVE_ERR", "An IOException " +
+                "occurred while attempting to save the Configuration " +
+                "(check your input values).");
+        this.defaultTranslation.put("CFG_STREAM_NULL", "Failed to reload " +
+                "configuration; InputStream was null (is your Source " +
+                "File null?).");
 
         // Database Messages
         this.defaultTranslation.put("DB_CNCT_ERR", "An error occurred while " +
@@ -117,7 +132,7 @@ public class LocalizationManager {
         this.defaultTranslation.put("BAD_DB_DRVR", "The database driver " +
                 "requested could not be found. Requested driver: ");
         this.defaultTranslation.put("DB_OPEN_SUC", "Established connection " +
-                "to the database.");
+                "to database.");
         this.defaultTranslation.put("DB_CLOSE_SUC", "The connection to the " +
                 "database was closed successfully.");
         this.defaultTranslation.put("DB_CLOSE_ERR", "An error occurred while " +
@@ -131,10 +146,6 @@ public class LocalizationManager {
         this.defaultTranslation.put("DB_DEBUG_ACTIVE", "Database Debugging " +
                 "is active. All SQL queries will be logged as they are " +
                 "received.");
-        this.defaultTranslation.put("DB_NULL_ERR", "The database variable " +
-                "for this Plugin has not been initialized.");
-        this.defaultTranslation.put("DB_OFF_ERR", "This plugin has not been " +
-                "configured to utilize a Database.");
         this.defaultTranslation.put("BAD_SQL_INPUT", "A parameter passed to " +
                 "the StatementObject is invalid! Valid parameters are those " +
                 "of type String and type Integer.");
@@ -144,13 +155,18 @@ public class LocalizationManager {
         String value;
 
         if (translation != null) {
-            value = translation.get("translation." + key);
+            value = translation.get(key);
+
+            // Attempt to fall back to library/plugin specified default store
+            if (value == null || value.equals("null")) {
+                value = defaultTranslation.get(key);
+            }
         } else {
             value = defaultTranslation.get(key);
         }
 
-        if (value == null || value.isEmpty()) {
-            return "Invalid or missing Translation-ID: " + key;
+        if (value == null || value.equals("null") || value.isEmpty()) {
+            return "Invalid Translation-Key: " + key;
         } else {
             return value;
         }
@@ -158,6 +174,14 @@ public class LocalizationManager {
 
     public final void addDefaultValue(String key, String value) {
         this.defaultTranslation.put(key, value);
+    }
+
+    public final void appendLocalizationStore(LocalizationStore values) {
+        Map<String,String> finalMap = new HashMap<String, String>();
+        finalMap.putAll(defaultTranslation);
+        finalMap.putAll(values.getValues());
+
+        this.defaultTranslation = finalMap;
     }
 
 }

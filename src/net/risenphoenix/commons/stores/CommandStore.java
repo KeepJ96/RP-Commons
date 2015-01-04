@@ -1,6 +1,5 @@
 /*
- * Copyright 2014 Jacob Keep (Jnk1296).
- * All rights reserved.
+ * Copyright © 2014 Jacob Keep (Jnk1296). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,10 +28,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.risenphoenix.commons.commands;
+package net.risenphoenix.commons.stores;
 
-public enum CommandType {
-    STATIC,
-    VARIABLE,
-    DYNAMIC;
+import net.risenphoenix.commons.Plugin;
+import net.risenphoenix.commons.commands.Command;
+
+import java.util.ArrayList;
+
+public class CommandStore extends Store {
+
+    private ArrayList<Command> commands;
+
+    public CommandStore(final Plugin plugin) {
+        super(plugin);
+        this.commands = new ArrayList<Command>();
+        initializeStore();
+    }
+
+    public void initializeStore() {
+        throw new UnsupportedOperationException(this.plugin
+                .getLocalizationManager().getLocalString("NO_IMPLEMENT"));
+    }
+
+    public final void add(Command cmd) {
+        this.commands.add(cmd);
+    }
+
+    public final ArrayList<Command> getCommands() {
+        return this.commands;
+    }
+
 }

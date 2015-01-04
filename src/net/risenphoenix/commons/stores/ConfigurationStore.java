@@ -1,6 +1,5 @@
 /*
- * Copyright 2014 Jacob Keep (Jnk1296).
- * All rights reserved.
+ * Copyright © 2014 Jacob Keep (Jnk1296). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,12 +28,28 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.risenphoenix.commons.Database;
+package net.risenphoenix.commons.stores;
 
-import java.sql.ResultSet;
+import net.risenphoenix.commons.Plugin;
+import net.risenphoenix.commons.configuration.ConfigurationOption;
 
-public class QueryFilter {
+import java.util.ArrayList;
 
-    public Object onExecute(ResultSet resultSet) { return null; }
+public class ConfigurationStore extends Store {
 
+    private ArrayList<ConfigurationOption> options;
+
+    public ConfigurationStore(final Plugin plugin) {
+        super(plugin);
+        this.options = new ArrayList<ConfigurationOption>();
+        initializeStore();
+    }
+
+    public final void add(ConfigurationOption option) {
+        this.options.add(option);
+    }
+
+    public final ArrayList<ConfigurationOption> getOptions() {
+        return this.options;
+    }
 }

@@ -1,6 +1,5 @@
 /*
- * Copyright 2014 Jacob Keep (Jnk1296).
- * All rights reserved.
+ * Copyright © 2014 Jacob Keep (Jnk1296). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,10 +28,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.risenphoenix.commons.Database;
+package net.risenphoenix.commons.database;
 
 import net.risenphoenix.commons.Plugin;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -44,6 +44,19 @@ public class DatabaseManager {
     private DatabaseType type;
     private boolean debug = false;
 
+    /* Connection Properties */
+
+    // MySQL
+    private String hostname = null;
+    private int port = -1;
+    private String database = null;
+    private String username = null;
+    private String password = null;
+    private int poolSize = 1;
+
+    // SQLite
+    private String dbName = null;
+
     // SQLite Constructor
     public DatabaseManager(final Plugin plugin) {
         this.plugin = plugin;
@@ -51,12 +64,42 @@ public class DatabaseManager {
         this.type = DatabaseType.SQLITE;
     }
 
+    // SQLite Constructor w/ DB Name
+    public DatabaseManager(final Plugin plugin, final String dbName) {
+        this.plugin = plugin;
+
+        // Value Assignment
+        this.dbName = dbName;
+
+        // Connection Creation
+        this.connection = new DatabaseConnection(plugin, dbName);
+        this.type = DatabaseType.SQLITE;
+    }
+
     // MySQL Constructor
     public DatabaseManager(final Plugin plugin, String hostname, int port,
-                           String database, String username, String pwd) {
+                           String database, String username, String pwd,
+                           int poolSize) {
         this.plugin = plugin;
-        this.connection = new DatabaseConnection(plugin, hostname, port,
-                database, username, pwd);
+
+        // Value Assignment
+        this.hostname = hostname;
+        this.port = port;
+        this.database = database;
+        this.username = username;
+        this.password = pwd;
+        this.poolSize = poolSize;
+
+        // Connection Creation (Pooled)
+        if (poolSize > 1) {
+            this.connection = new DatabaseConnection(plugin, hostname, port,
+                    database, username, pwd, poolSize);
+
+        // Connection Creation (Non-pooled)
+        } else {
+            this.connection = new DatabaseConnection(plugin, hostname, port,
+                    database, username, pwd);
+        }
         this.type = DatabaseType.MYSQL;
     }
 
@@ -69,11 +112,14 @@ public class DatabaseManager {
     // Statement Execute Master Method
     public final boolean executeStatement(StatementObject stmt) {
         try {
-            if (this.debug) this.plugin.sendConsoleMessage(Level.INFO,
-                    "DatabaseManager.executeStatement(): " + stmt.toString());
+            confirmConnection(); // Confirm connection has not timed out.
+            PreparedStatement statement =
+                    stmt.getStatement(this.connection.getConnection());
 
-            this.connection.query(stmt.getStatement(
-                    this.connection.getConnection()));
+            if (this.debug)
+            this.plugin.sendConsoleMessage(Level.INFO, statement.toString());
+
+            stmt.getStatement(this.connection.getConnection()).executeUpdate();
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -88,16 +134,14 @@ public class DatabaseManager {
         Object obj = null;
 
         try {
-            if (this.debug) this.plugin.sendConsoleMessage(Level.INFO,
-                    "DatabaseManager.executeQuery(): " + stmt.toString());
-
-            res = this.connection.query(stmt.getStatement(
-                    this.connection.getConnection())).getResultSet();
+            confirmConnection(); // Confirm connection has not timed out.
+            res = stmt.getStatement(this.connection.getConnection())
+                    .executeQuery();
             obj = filter.onExecute(res);
             res.close();
         } catch (SQLException e) {
             this.plugin.sendConsoleMessage(Level.SEVERE,
-                    e.getLocalizedMessage());
+                    e.getMessage());
         } finally {
             try {
                 if (res != null) res.close();
@@ -109,6 +153,21 @@ public class DatabaseManager {
         }
 
         return obj;
+    }
+
+    private void confirmConnection() {
+        if (connection == null) {
+            if (getDatabaseType().equals(DatabaseType.MYSQL)) {
+                connection = new DatabaseConnection(getPlugin(), hostname, port,
+                        database, username, password);
+            } else {
+                if (dbName == null) {
+                    connection = new DatabaseConnection(getPlugin());
+                } else {
+                    connection = new DatabaseConnection(getPlugin(), dbName);
+                }
+            }
+        }
     }
 
     public final Plugin getPlugin() {
@@ -125,7 +184,7 @@ public class DatabaseManager {
 
     public enum DatabaseType {
         MYSQL,
-        SQLITE;
+        SQLITE
     }
 
 }

@@ -1,18 +1,17 @@
 /*
- * Copyright 2014 Jacob Keep (Jnk1296).
- * All rights reserved.
+ * Copyright © 2014 Jacob Keep (Jnk1296). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- *  * Redistributions of source code must retain the above copyright notice,
+ *  * Redistributions of source code must retain the above copyright notice, 
  *   this list of conditions and the following disclaimer.
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *   this list of conditions and the following disclaimer in the documentation
+ *  * Redistributions in binary form must reproduce the above copyright notice, 
+ *   this list of conditions and the following disclaimer in the documentation 
  *   and/or other materials provided with the distribution.
  *
- *  * Neither the name of JuNK Software nor the names of its contributors may
+ *  * Neither the name of JuNK Software nor the names of its contributors may 
  *   be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -29,23 +28,32 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.risenphoenix.commons.commands;
+package net.risenphoenix.commons.util;
 
-public class ParseResult {
+public class MessageParser {
 
-	private final Command cmd;
-	private final ResultType type;
-	
-	public ParseResult(final ResultType type, final Command cmd) {
-		this.type = type;
-		this.cmd = cmd;
-	}
-	
-	public final ResultType getResult() {
-		return this.type;
-	}
-	
-	public final Command getCommand() {
-		return this.cmd;
-	}
+    private String[] args;
+    private int startPos;
+
+    public MessageParser(String[] args, int startPos) {
+        this.args = args;
+        this.startPos = startPos;
+    }
+
+    public String parseMessage() {
+        String message = null;
+
+        if (args.length >= startPos) {
+            StringBuilder msgParse = new StringBuilder();
+
+            for (int i = startPos; i < args.length; i++) {
+                msgParse.append(args[i]);
+                if (!(i == (args.length - 1))) msgParse.append(" ");
+            }
+
+            message = msgParse.toString();
+        }
+
+        return message;
+    }
 }

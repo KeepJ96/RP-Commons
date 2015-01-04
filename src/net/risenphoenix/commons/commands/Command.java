@@ -1,6 +1,5 @@
 /*
- * Copyright 2014 Jacob Keep (Jnk1296).
- * All rights reserved.
+ * Copyright © 2014 Jacob Keep (Jnk1296). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,9 +30,13 @@
 
 package net.risenphoenix.commons.commands;
 
-import net.risenphoenix.commons.Localization.LocalizationManager;
+import net.risenphoenix.commons.localization.LocalizationManager;
 import net.risenphoenix.commons.Plugin;
 import org.bukkit.command.CommandSender;
+import org.bukkit.conversations.ConversationContext;
+import org.bukkit.conversations.ConversationFactory;
+import org.bukkit.conversations.Prompt;
+import org.bukkit.conversations.ValidatingPrompt;
 import org.bukkit.permissions.Permission;
 
 import java.util.logging.Level;
@@ -50,7 +53,7 @@ import java.util.logging.Level;
  * @author Jacob Keep (Jnk1296)
  */
 
-public class Command {
+public class Command extends ValidatingPrompt {
     private final Plugin plugin;
     private final CommandType type;
 
@@ -66,6 +69,7 @@ public class Command {
     private Permission[] commandPerms = null;
 
     private LocalizationManager LM;
+    private ConversationFactory conFactory = null;
 
     /**
      * <p>
@@ -89,42 +93,6 @@ public class Command {
     public Command(final Plugin plugin, String[] callArgs, CommandType type) {
         this.plugin = plugin;
         this.callArgs = callArgs;
-        this.type = type;
-        this.LM = this.plugin.getLocalizationManager();
-    }
-
-    /**
-     * <p>
-     * <strong>Constructor:</strong> Responsible for the main initialization of
-     * the Command instance. Registers the required arguments for the command to
-     * be identified, as well as the number of arguments needed to successfully
-     * call the command. The Plugin instance is required to link to the
-     * LocalizationManager.</p>
-     * <p>
-     * The number passed for <strong>requiredArgs</strong> can be any positive
-     * number (0+) or -1. When -1 is specified, this signals that the command
-     * is open-ended, and allows for a variable number of arguments. This is
-     * typically used for commands such as those allowing for custom messages to
-     * specified. <strong>When setting the number of arguments required, YOU
-     * MUST INCLUDE the root command!</strong> The Command Manager will fail to
-     * parse input for your command if you do not do this.</p>
-     * <p>
-     * <strong>callArgs</strong> contains the sic arguments which would be
-     * typed in-game to call the command, but not those which are variables.
-     * <strong>Ex: </strong><em>/ipc exempt-list ip</em> <strong>-></strong>
-     * { "ipc", "exempt-list", "ip" }.
-     * from the arguments array.</p>
-     *
-     * @param plugin
-     * @param callArgs
-     * @param requiredArgs
-     * @param type
-     */
-    public Command(final Plugin plugin, String[] callArgs, int requiredArgs,
-                   CommandType type) {
-        this.plugin = plugin;
-        this.callArgs = callArgs;
-        this.requiredArgs = requiredArgs;
         this.type = type;
         this.LM = this.plugin.getLocalizationManager();
     }
@@ -315,6 +283,7 @@ public class Command {
      *
      * @return int
      */
+    @Deprecated
     public final int getArgumentsRequired() {
         return this.requiredArgs;
     }
@@ -389,5 +358,39 @@ public class Command {
      */
     public final void sendConsoleMessage(Level level, String message) {
         this.plugin.sendConsoleMessage(level, message);
+    }
+
+    /**
+     *
+     * @param factory
+     */
+    public final void setConversationFactory(ConversationFactory factory) {
+        this.conFactory = factory;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public final ConversationFactory getConversationFactory() {
+        return this.conFactory;
+    }
+
+    @Override
+    public String getPromptText(ConversationContext context) {
+        throw new UnsupportedOperationException(
+                this.getLocalString("NO_IMPLEMENT"));
+    }
+
+    @Override
+    public Prompt acceptValidatedInput(ConversationContext context, String in) {
+        throw new UnsupportedOperationException(
+                this.getLocalString("NO_IMPLEMENT"));
+    }
+
+    @Override
+    public boolean isInputValid (ConversationContext context, String in) {
+        throw new UnsupportedOperationException(
+                this.getLocalString("NO_IMPLEMENT"));
     }
 }
